@@ -6,21 +6,21 @@
  */
 const fileSort = (arr, type) => {
     switch (type) {
-        case 'BTAscending':
+        case 'BTAscending': // 创建时间升序
             return arr.sort((a, b) => a.birthtime - b.birthtime)
-        case 'BTDescending':
+        case 'BTDescending': // 创建时间降序
             return arr.sort((a, b) => b.birthtime - a.birthtime)
-        case 'BTAscending':
+        case 'BTAscending': // 修改时间升序
             return arr.sort((a, b) => a.mtime - b.mtime)
-        case 'MTDescending':
+        case 'MTDescending': // 修改时间降序
             return arr.sort((a, b) => b.mtime - a.mtime)
-        case 'ATAscending':
+        case 'ATAscending': // 访问时间升序
             return arr.sort((a, b) => a.atime - b.atime)
-        case 'ATDescending':
+        case 'ATDescending': // 访问时间降序
             return arr.sort((a, b) => b.atime - a.atime)
-        case 'NAscending':
+        case 'NAscending': // 文件名升序
             return arr.sort((a, b) => a.fileName - b.fileName)
-        case 'NDescending':
+        case 'NDescending': // 文件名降序
             return arr.sort((a, b) => b.fileName - a.fileName)
         default:
             return arr
