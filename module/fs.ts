@@ -28,7 +28,7 @@ const readDirFile = async (): Promise<FileInfo[]> => {
 
   for await (const dirEntry of readDir(currentDir)) {
     const { name, isFile }: { name: string; isFile: boolean } = dirEntry;
-    if (!isFile) break;
+    if (!isFile) continue;
 
     const nameArr: string[] = name.split(".");
     const fileType: string = nameArr.at(-1) ?? "";
@@ -37,35 +37,38 @@ const readDirFile = async (): Promise<FileInfo[]> => {
     const file: Deno.FsFile = await Deno.open(`${currentDir}/${name}`, {
       read: true,
     });
-    const fileInfo: Deno.FileInfo = await file.stat();
 
-    const atime: number = fileInfo.atime
-      ? new Date(fileInfo.atime).getTime()
-      : 0;
-    const mtime: number = fileInfo.mtime
-      ? new Date(fileInfo.mtime).getTime()
-      : 0;
-    const birthtime: number = fileInfo.birthtime
-      ? new Date(fileInfo.birthtime).getTime()
-      : 0;
+    try {
+      const fileInfo: Deno.FileInfo = await file.stat();
 
-    fileInfoArr.push({
-      name,
-      fileName: isNaN(Number(fileName)) ? fileName : Number(fileName),
-      fileType,
-      atime,
-      mtime,
-      birthtime,
-    });
+      const atime: number = fileInfo.atime
+        ? new Date(fileInfo.atime).getTime()
+        : 0;
+      const mtime: number = fileInfo.mtime
+        ? new Date(fileInfo.mtime).getTime()
+        : 0;
+      const birthtime: number = fileInfo.birthtime
+        ? new Date(fileInfo.birthtime).getTime()
+        : 0;
 
-    file.close();
+      fileInfoArr.push({
+        name,
+        fileName: isNaN(Number(fileName)) ? fileName : Number(fileName),
+        fileType,
+        atime,
+        mtime,
+        birthtime,
+      });
+    } finally {
+      file.close();
+    }
   }
 
   return fileInfoArr;
 };
 
 /**
- * 重命名方法
+ * 重命名方法（两阶段：先改为临时名，再改为最终名，避免文件名冲突覆盖）
  */
 const reName = async (
   fileArr: FileInfo[],
@@ -74,21 +77,45 @@ const reName = async (
   type?: string,
 ): Promise<void> => {
   const currentDir: string = cwd();
+  const TEMP_PREFIX: string = "__rename_tmp_";
 
-  for (const [index, file] of fileArr.entries()) {
-    const { fileType, name }: FileInfo = file;
-    const extension: string = fileType === "jpg" ? "jpeg" : fileType;
-    const oldPath: string = `${currentDir}/${name}`;
-    const newName: string = `${baseName}${Number(start) + index}.${extension}`;
-    const newPath: string = `${currentDir}/${newName}`;
+  interface RenameTask {
+    readonly oldName: string;
+    readonly newName: string;
+    readonly tempName: string;
+  }
 
+  const tasks: RenameTask[] = fileArr.map(
+    (file: FileInfo, index: number): RenameTask => {
+      const extension: string = file.fileType === "jpg" ? "jpeg" : file.fileType;
+      const newName: string = `${baseName}${Number(start) + index}.${extension}`;
+      const tempName: string = `${TEMP_PREFIX}${index}_${Date.now()}.${extension}`;
+      return { oldName: file.name, newName, tempName };
+    },
+  );
+
+  // 第一阶段：旧文件名 => 临时文件名
+  if (type !== "test") {
+    for (const task of tasks) {
+      await rename(
+        `${currentDir}/${task.oldName}`,
+        `${currentDir}/${task.tempName}`,
+      );
+    }
+  }
+
+  // 第二阶段：临时文件名 => 最终文件名
+  for (const task of tasks) {
     console.log(
-      `📄：\u001b[33m${name}\u001b[0m => \u001b[33m${newName}\u001b[0m`,
+      `📄：\u001b[33m${task.oldName}\u001b[0m => \u001b[33m${task.newName}\u001b[0m`,
       "✅",
     );
 
     if (type !== "test") {
-      await rename(oldPath, newPath);
+      await rename(
+        `${currentDir}/${task.tempName}`,
+        `${currentDir}/${task.newName}`,
+      );
     }
   }
 };
