@@ -1,6 +1,3 @@
-// deno run --allow-all bitch.ts --start 31 --name 100097210_p --sort 'BTDescending'
-// deno run --allow-all bitch.ts --start '图片开始的数字' --name '图片名称' --sort 'BTDescending'
-
 import config from "./config.ts";
 import { readDirFile, reName } from "./module/fs.ts";
 import { fileSort } from "./module/tool.ts";

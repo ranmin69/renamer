@@ -28,7 +28,7 @@ deno install -f --allow-all -n rename bitch.ts
 | `--type` | 设为 `test` 时仅预览，不实际执行 | ❌ | - |
 
 ```shell
-rename --start 31 --name 100097210_p --sort 'BTDescending'
+rename --start 69 --name 100097210_p --sort 'bt-desc'
 ```
 
 ### 预览模式
@@ -36,7 +36,7 @@ rename --start 31 --name 100097210_p --sort 'BTDescending'
 > **建议：正式重命名前先预览确认结果。**
 
 ```shell
-rename --start 1 --name photo --sort 'BTAscending' --type test
+rename --start 1 --name photo --sort 'bt-asc' --type test
 ```
 
 ---
@@ -49,28 +49,28 @@ rename --start 1 --name photo --sort 'BTAscending' --type test
 
 | 排序值 | 说明 |
 |--------|------|
-| `BTAscending` | 按**创建时间**升序（最早创建的排最前） |
-| `BTDescending` | 按**创建时间**降序（最晚创建的排最前） |
-| `MTAscending` | 按**修改时间**升序（最早修改的排最前） |
-| `MTDescending` | 按**修改时间**降序（最晚修改的排最前） |
-| `ATAscending` | 按**访问时间**升序（最早访问的排最前） |
-| `ATDescending` | 按**访问时间**降序（最晚访问的排最前） |
-| `NAscending` | 按**文件名数字**升序（数字小的排最前） |
-| `NDescending` | 按**文件名数字**降序（数字大的排最前） |
+| `bt-asc` | 按**创建时间**升序（最早创建的排最前） |
+| `bt-desc` | 按**创建时间**降序（最晚创建的排最前） |
+| `mt-asc` | 按**修改时间**升序（最早修改的排最前） |
+| `mt-desc` | 按**修改时间**降序（最晚修改的排最前） |
+| `at-asc` | 按**访问时间**升序（最早访问的排最前） |
+| `at-desc` | 按**访问时间**降序（最晚访问的排最前） |
+| `n-asc` | 按**文件名数字**升序（数字小的排最前） |
+| `n-desc` | 按**文件名数字**降序（数字大的排最前） |
 | `""`（不传） | 不排序，保持文件系统读取顺序 |
 
 ### 命名规则
 
-排序值 = **前缀** + **方向**：
+排序值 = **前缀** + `-` + **方向**：
 
 - **前缀**
-  - `BT` = Birth Time（创建时间）
-  - `MT` = Modify Time（修改时间）
-  - `AT` = Access Time（访问时间）
-  - `N` = Name（文件名数字部分）
+  - `bt` = Birth Time（创建时间）
+  - `mt` = Modify Time（修改时间）
+  - `at` = Access Time（访问时间）
+  - `n` = Name（文件名数字部分）
 - **方向**
-  - `Ascending` = 升序（从小到大）
-  - `Descending` = 降序（从大到小）
+  - `asc` = 升序（从小到大）
+  - `desc` = 降序（从大到小）
 
 ### 排序示例
 
@@ -83,7 +83,7 @@ c.jpg   → 创建于 12:00
 ```
 
 ```shell
-rename --name photo --start 1 --sort 'BTAscending'
+rename --name photo --start 1 --sort 'bt-asc'
 ```
 
 按创建时间升序排列：`b(08:00) → a(10:00) → c(12:00)`

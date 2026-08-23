@@ -1,14 +1,14 @@
 import type { FileInfo } from "./fs.ts";
 
 export type SortType =
-  | "BTAscending"
-  | "BTDescending"
-  | "MTAscending"
-  | "MTDescending"
-  | "ATAscending"
-  | "ATDescending"
-  | "NAscending"
-  | "NDescending"
+  | "bt-asc"
+  | "bt-desc"
+  | "mt-asc"
+  | "mt-desc"
+  | "at-asc"
+  | "at-desc"
+  | "n-asc"
+  | "n-desc"
   | "";
 
 export interface ToolModule {
@@ -18,16 +18,16 @@ export interface ToolModule {
 type CompareFn = (a: FileInfo, b: FileInfo) => number;
 
 const sortStrategies: Record<SortType, CompareFn> = {
-  BTAscending: (a: FileInfo, b: FileInfo): number => a.birthtime - b.birthtime,
-  BTDescending: (a: FileInfo, b: FileInfo): number =>
+  "bt-asc": (a: FileInfo, b: FileInfo): number => a.birthtime - b.birthtime,
+  "bt-desc": (a: FileInfo, b: FileInfo): number =>
     b.birthtime - a.birthtime,
-  MTAscending: (a: FileInfo, b: FileInfo): number => a.mtime - b.mtime,
-  MTDescending: (a: FileInfo, b: FileInfo): number => b.mtime - a.mtime,
-  ATAscending: (a: FileInfo, b: FileInfo): number => a.atime - b.atime,
-  ATDescending: (a: FileInfo, b: FileInfo): number => b.atime - a.atime,
-  NAscending: (a: FileInfo, b: FileInfo): number =>
+  "mt-asc": (a: FileInfo, b: FileInfo): number => a.mtime - b.mtime,
+  "mt-desc": (a: FileInfo, b: FileInfo): number => b.mtime - a.mtime,
+  "at-asc": (a: FileInfo, b: FileInfo): number => a.atime - b.atime,
+  "at-desc": (a: FileInfo, b: FileInfo): number => b.atime - a.atime,
+  "n-asc": (a: FileInfo, b: FileInfo): number =>
     Number(a.fileName) - Number(b.fileName),
-  NDescending: (a: FileInfo, b: FileInfo): number =>
+  "n-desc": (a: FileInfo, b: FileInfo): number =>
     Number(b.fileName) - Number(a.fileName),
   "": (_a: FileInfo, _b: FileInfo): number => 0,
 };
