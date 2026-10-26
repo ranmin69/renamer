@@ -3,7 +3,7 @@ export interface Config {
 }
 
 const config: Config = {
-  argArr: ["--name", "--start", "--sort", "--type"],
+  argArr: ["--name", "--start", "--sort"],
 };
 
 export default config;

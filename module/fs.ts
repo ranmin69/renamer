@@ -13,11 +13,11 @@ export interface FsModule {
     fileArr: FileInfo[],
     baseName: string,
     start: number | string,
-    type?: string,
+    dryRun: boolean,
   ) => Promise<void>;
 }
 
-const { readDir, cwd, rename } = Deno;
+const { readDir, cwd, rename, stdin } = Deno;
 
 /**
  * 读取文件夹所有子文件，并返回子文件信息。
@@ -69,12 +69,15 @@ const readDirFile = async (): Promise<FileInfo[]> => {
 
 /**
  * 重命名方法（两阶段：先改为临时名，再改为最终名，避免文件名冲突覆盖）
+ *
+ * 执行流程：先列出全部「更改前后」的名字对比进行预览；
+ * 若为 dry-run（--dry-run）模式则仅预览并返回；否则等待用户按 Enter 确认后，再真正执行重命名。
  */
 const reName = async (
   fileArr: FileInfo[],
   baseName: string,
   start: number | string,
-  type?: string,
+  dryRun: boolean,
 ): Promise<void> => {
   const currentDir: string = cwd();
   const TEMP_PREFIX: string = "__rename_tmp_";
@@ -94,30 +97,50 @@ const reName = async (
     },
   );
 
+  // 更改名字前，用警告图标着重提示当前操作的文件夹路径
+  console.log(`\u001b[1;31m⚠️  当前操作目录：${currentDir}\u001b[0m`);
+  console.log("");
+
+  // 预览：先列出所有更改前后的名字对比（橙色 \u001b[38;5;208m）
+  console.log("\u001b[36m重命名预览：\u001b[0m");
+  for (const task of tasks) {
+    console.log(
+      `📄：\u001b[38;5;208m${task.oldName}\u001b[0m => \u001b[38;5;208m${task.newName}\u001b[0m`,
+    );
+  }
+
+  // dry-run 模式：仅预览，不执行任何重命名
+  if (dryRun) {
+    console.log(
+      `\u001b[36m（--dry-run 预览模式，共 ${tasks.length} 个文件，未实际重命名）\u001b[0m`,
+    );
+    return;
+  }
+
+  // 正式模式：等待用户按 Enter 确认后再执行
+  console.log("");
+  console.log(
+    `\u001b[33m确认以上 ${tasks.length} 个文件无误后，按 Enter 键开始重命名（Ctrl+C 取消）：\u001b[0m`,
+  );
+  await stdin.read(new Uint8Array(1024));
+
   // 第一阶段：旧文件名 => 临时文件名
-  if (type !== "test") {
-    for (const task of tasks) {
-      await rename(
-        `${currentDir}/${task.oldName}`,
-        `${currentDir}/${task.tempName}`,
-      );
-    }
+  for (const task of tasks) {
+    await rename(
+      `${currentDir}/${task.oldName}`,
+      `${currentDir}/${task.tempName}`,
+    );
   }
 
   // 第二阶段：临时文件名 => 最终文件名
   for (const task of tasks) {
-    console.log(
-      `📄：\u001b[33m${task.oldName}\u001b[0m => \u001b[33m${task.newName}\u001b[0m`,
-      "✅",
+    await rename(
+      `${currentDir}/${task.tempName}`,
+      `${currentDir}/${task.newName}`,
     );
-
-    if (type !== "test") {
-      await rename(
-        `${currentDir}/${task.tempName}`,
-        `${currentDir}/${task.newName}`,
-      );
-    }
   }
+
+  console.log(`\u001b[32m已重命名 ${tasks.length} 个文件\u001b[0m`, "✅");
 };
 
 const fs: FsModule = {
