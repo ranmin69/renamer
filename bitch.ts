@@ -1,12 +1,25 @@
 import config from "./config.ts";
 import { readDirFile, reName } from "./module/fs.ts";
 import { fileSort } from "./module/tool.ts";
-import { isHelpRequest, showHelp } from "./module/help.ts";
+import {
+  isHelpRequest,
+  isVersionRequest,
+  showHelp,
+  showVersion,
+} from "./module/help.ts";
 import type { FileInfo } from "./module/fs.ts";
 import type { SortType } from "./module/tool.ts";
 
 const args: readonly string[] = Deno.args;
 const argArr: readonly string[] = config.argArr;
+
+/**
+ * 命令行包含 --version / -v 时，输出当前版本号并退出
+ */
+if (isVersionRequest(args)) {
+  showVersion();
+  Deno.exit(0);
+}
 
 /**
  * 无参数或命令行包含 --help / -h 时，输出帮助信息并退出

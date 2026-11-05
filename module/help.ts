@@ -1,13 +1,20 @@
+import config from "../config.ts";
+
 /**
- * 帮助信息模块：集中管理 --help / -h 的判定逻辑与输出内容。
+ * 帮助信息模块：集中管理 --help / -h、--version / -v 的判定逻辑与输出内容。
  */
 export interface HelpModule {
   readonly isHelpRequest: (args: readonly string[]) => boolean;
   readonly showHelp: () => void;
+  readonly isVersionRequest: (args: readonly string[]) => boolean;
+  readonly showVersion: () => void;
 }
 
 /** 触发帮助输出的命令行标志 */
 const HELP_FLAGS: readonly string[] = ["--help", "-h"];
+
+/** 触发版本输出的命令行标志 */
+const VERSION_FLAGS: readonly string[] = ["--version", "-v", "-V"];
 
 // ANSI 终端样式代码
 const RESET: string = "\u001b[0m";
@@ -20,7 +27,7 @@ const CYAN: string = "\u001b[36m";
 
 /** 帮助信息正文 */
 const helpText: string = `
-${BOLD}${CYAN}Rename${RESET} ${DIM}— 批量文件重命名命令行工具${RESET}
+${BOLD}${CYAN}Rename${RESET} ${GREEN}v${config.version}${RESET} ${DIM}— 批量文件重命名命令行工具${RESET}
 
 ${BOLD}${YELLOW}用法:${RESET}
   rename ${GREEN}[选项]${RESET}
@@ -30,6 +37,7 @@ ${BOLD}${YELLOW}选项:${RESET}
   ${GREEN}--start${RESET} <数字>  序号起始数字，文件名从该数字开始递增 ${DIM}[默认: 1]${RESET}
   ${GREEN}--sort${RESET} <类型>   排序方式，决定文件处理顺序 ${DIM}[默认: 不排序]${RESET}
   ${GREEN}--dry-run${RESET}       仅预览重命名结果，不实际执行（试运行）
+  ${GREEN}-v, --version${RESET}   显示当前版本号
   ${GREEN}-h, --help${RESET}      显示本帮助信息
 
 ${BOLD}${YELLOW}排序类型 (--sort):${RESET}
@@ -68,9 +76,30 @@ const showHelp = (): void => {
   console.log(helpText);
 };
 
+/**
+ * 判断命令行参数中是否包含版本标志
+ */
+const isVersionRequest = (args: readonly string[]): boolean =>
+  args.some((arg: string): boolean => VERSION_FLAGS.includes(arg));
+
+/**
+ * 输出当前版本号到命令行
+ */
+const showVersion = (): void => {
+  console.log(`${BOLD}${CYAN}Rename${RESET} ${GREEN}v${config.version}${RESET}`);
+};
+
 const help: HelpModule = {
   isHelpRequest,
   showHelp,
+  isVersionRequest,
+  showVersion,
 };
 
-export { help as default, isHelpRequest, showHelp };
+export {
+  help as default,
+  isHelpRequest,
+  showHelp,
+  isVersionRequest,
+  showVersion,
+};

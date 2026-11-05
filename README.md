@@ -26,6 +26,7 @@ deno install -f --allow-all -n rename bitch.ts
 | `--start` | 序号起始数字，文件名从该数字开始递增 | ❌ | `1` |
 | `--sort` | 排序方式，决定文件处理顺序（见下方） | ❌ | `""` |
 | `--dry-run` | 仅预览重命名结果，不实际执行（试运行） | ❌ | `false` |
+| `-v` / `--version` | 显示当前版本号 | ❌ | - |
 | `-h` / `--help` | 显示帮助信息 | ❌ | - |
 
 ```shell
@@ -33,6 +34,18 @@ rename --start 69 --name 100097210_p --sort 'bt-desc'
 ```
 
 > **提示**：直接运行 `rename`（不带任何参数），或加上 `-h` / `--help`，都会在命令行输出完整帮助信息。
+
+### 查看版本
+
+```shell
+rename --version
+```
+
+输出：
+
+```text
+Rename v0.3.9
+```
 
 ### 执行流程（预览 + 确认）
 
