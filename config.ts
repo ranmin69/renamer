@@ -5,7 +5,7 @@ export interface Config {
 }
 
 const config: Config = {
-  version: "0.3.9",
+  version: "0.3.11",
   argArr: ["--name", "--start", "--sort"],
 };
 
