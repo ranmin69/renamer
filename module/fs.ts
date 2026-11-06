@@ -18,7 +18,7 @@ export interface FsModule {
   ) => Promise<void>;
 }
 
-const { readDir, cwd, rename, stdin } = Deno;
+const { readDir, cwd, rename, stat, stdin } = Deno;
 
 /**
  * 判断文件是否需要跳过（跳过时不执行任何重命名操作）。
@@ -35,6 +35,7 @@ const isSkippedFile = (name: string): boolean => {
 /**
  * 读取文件夹所有子文件，并返回子文件信息。
  * 子目录、点文件、无扩展名文件均会被跳过。
+ *
  */
 const readDirFile = async (): Promise<FileInfo[]> => {
   const fileInfoArr: FileInfo[] = [];
@@ -54,34 +55,26 @@ const readDirFile = async (): Promise<FileInfo[]> => {
     const fileType: string = nameArr.at(-1) ?? "";
     const fileName: string = nameArr.slice(0, -1).join(".");
 
-    const file: Deno.FsFile = await Deno.open(`${currentDir}/${name}`, {
-      read: true,
+    const fileInfo: Deno.FileInfo = await stat(`${currentDir}/${name}`);
+
+    const atime: number = fileInfo.atime
+      ? new Date(fileInfo.atime).getTime()
+      : 0;
+    const mtime: number = fileInfo.mtime
+      ? new Date(fileInfo.mtime).getTime()
+      : 0;
+    const birthtime: number = fileInfo.birthtime
+      ? new Date(fileInfo.birthtime).getTime()
+      : 0;
+
+    fileInfoArr.push({
+      name,
+      fileName: isNaN(Number(fileName)) ? fileName : Number(fileName),
+      fileType,
+      atime,
+      mtime,
+      birthtime,
     });
-
-    try {
-      const fileInfo: Deno.FileInfo = await file.stat();
-
-      const atime: number = fileInfo.atime
-        ? new Date(fileInfo.atime).getTime()
-        : 0;
-      const mtime: number = fileInfo.mtime
-        ? new Date(fileInfo.mtime).getTime()
-        : 0;
-      const birthtime: number = fileInfo.birthtime
-        ? new Date(fileInfo.birthtime).getTime()
-        : 0;
-
-      fileInfoArr.push({
-        name,
-        fileName: isNaN(Number(fileName)) ? fileName : Number(fileName),
-        fileType,
-        atime,
-        mtime,
-        birthtime,
-      });
-    } finally {
-      file.close();
-    }
   }
 
   if (skippedNameArr.length > 0) {
