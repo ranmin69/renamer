@@ -36,6 +36,7 @@ ${BOLD}${YELLOW}选项:${RESET}
   ${GREEN}--name${RESET} <名称>   重命名后的基础文件名（不含序号和扩展名）${RED}[必填]${RESET}
   ${GREEN}--start${RESET} <数字>  序号起始数字，文件名从该数字开始递增 ${DIM}[默认: 1]${RESET}
   ${GREEN}--sort${RESET} <类型>   排序方式，决定文件处理顺序 ${DIM}[默认: 不排序]${RESET}
+  ${GREEN}--ext${RESET} <数字>    保留扩展名的段数，2 可完整保留 .tar.gz ${DIM}[默认: 1]${RESET}
   ${GREEN}--dry-run${RESET}       仅预览重命名结果，不实际执行（试运行）
   ${GREEN}-v, --version${RESET}   显示当前版本号
   ${GREEN}-h, --help${RESET}      显示本帮助信息
@@ -55,11 +56,13 @@ ${BOLD}${YELLOW}示例:${RESET}
   ${DIM}$${RESET} rename --name photo --start 1 --sort bt-asc
   ${DIM}$${RESET} rename --start 69 --name 100097210_p --sort bt-desc
   ${DIM}$${RESET} rename --name photo --start 1 --sort bt-asc --dry-run  ${DIM}# 预览${RESET}
+  ${DIM}$${RESET} rename --name backup --ext 2  ${DIM}# 保留 .tar.gz 两段扩展名${RESET}
 
 ${BOLD}${YELLOW}注意:${RESET}
   · 请在目标文件所在目录下运行命令
   · 只处理文件，子目录自动跳过
   · .jpg 扩展名会自动转为 .jpeg
+  · 多段扩展名（如 .tar.gz）默认只保留最后一段，用 --ext 2 可完整保留
   · 采用两阶段重命名，避免新文件名覆盖旧文件
 `;
 
@@ -86,7 +89,9 @@ const isVersionRequest = (args: readonly string[]): boolean =>
  * 输出当前版本号到命令行
  */
 const showVersion = (): void => {
-  console.log(`${BOLD}${CYAN}Rename${RESET} ${GREEN}v${config.version}${RESET}`);
+  console.log(
+    `${BOLD}${CYAN}Rename${RESET} ${GREEN}v${config.version}${RESET}`,
+  );
 };
 
 const help: HelpModule = {
@@ -99,7 +104,7 @@ const help: HelpModule = {
 export {
   help as default,
   isHelpRequest,
-  showHelp,
   isVersionRequest,
+  showHelp,
   showVersion,
 };

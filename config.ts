@@ -5,8 +5,8 @@ export interface Config {
 }
 
 const config: Config = {
-  version: "0.3.11",
-  argArr: ["--name", "--start", "--sort"],
+  version: "0.4.0",
+  argArr: ["--name", "--start", "--sort", "--ext"],
 };
 
 export default config;

@@ -9,7 +9,7 @@ export interface FileInfo {
 
 export interface FsModule {
   readonly isSkippedFile: (name: string) => boolean;
-  readonly readDirFile: () => Promise<FileInfo[]>;
+  readonly readDirFile: (extCount: number) => Promise<FileInfo[]>;
   readonly reName: (
     fileArr: FileInfo[],
     baseName: string,
@@ -36,8 +36,9 @@ const isSkippedFile = (name: string): boolean => {
  * 读取文件夹所有子文件，并返回子文件信息。
  * 子目录、点文件、无扩展名文件均会被跳过。
  *
+ * @param extCount 保留的扩展名段数（如 2 表示 `.tar.gz` 整体作为扩展名保留），小于 1 时按 1 处理，即只保留最后一段。
  */
-const readDirFile = async (): Promise<FileInfo[]> => {
+const readDirFile = async (extCount: number): Promise<FileInfo[]> => {
   const fileInfoArr: FileInfo[] = [];
   const skippedNameArr: string[] = [];
   const currentDir: string = cwd();
@@ -52,8 +53,14 @@ const readDirFile = async (): Promise<FileInfo[]> => {
     }
 
     const nameArr: string[] = name.split(".");
-    const fileType: string = nameArr.at(-1) ?? "";
-    const fileName: string = nameArr.slice(0, -1).join(".");
+    // 保留最后 extCount 段作为扩展名（如 extCount=2 时 backup.tar.gz 的扩展名为 tar.gz），
+    // 段数上限为 nameArr.length - 1，确保基础名至少保留一段
+    const extSegments: number = Math.min(
+      Math.max(extCount, 1),
+      nameArr.length - 1,
+    );
+    const fileType: string = nameArr.slice(nameArr.length - extSegments).join(".",);
+    const fileName: string = nameArr.slice(0, nameArr.length - extSegments).join(".");
 
     const fileInfo: Deno.FileInfo = await stat(`${currentDir}/${name}`);
 
@@ -111,9 +118,14 @@ const reName = async (
 
   const tasks: RenameTask[] = fileArr.map(
     (file: FileInfo, index: number): RenameTask => {
-      const extension: string = file.fileType === "jpg" ? "jpeg" : file.fileType;
-      const newName: string = `${baseName}${Number(start) + index}.${extension}`;
-      const tempName: string = `${TEMP_PREFIX}${index}_${Date.now()}.${extension}`;
+      const extension: string = file.fileType === "jpg"
+        ? "jpeg"
+        : file.fileType;
+      const newName: string = `${baseName}${
+        Number(start) + index
+      }.${extension}`;
+      const tempName: string =
+        `${TEMP_PREFIX}${index}_${Date.now()}.${extension}`;
       return { oldName: file.name, newName, tempName };
     },
   );

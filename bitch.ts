@@ -50,7 +50,17 @@ const [
   fileName = "",
   fileStart = "1",
   sortType = "",
+  extArg = "1",
 ]: (string | undefined)[] = getArg();
+
+/**
+ * 保留扩展名的段数：仅接受 >= 1 的整数，非法值（非数字 / 小于 1）兜底为 1，
+ * 即默认只保留最后一段扩展名，与历史行为一致（如 2 可完整保留 .tar.gz）。
+ */
+const parsedExt: number = Number(extArg);
+const extCount: number = Number.isInteger(parsedExt) && parsedExt >= 1
+  ? parsedExt
+  : 1;
 
 /** 是否为 dry-run 预览模式（布尔标志，无值） */
 const dryRun: boolean = args.includes("--dry-run");
@@ -61,8 +71,11 @@ const dryRun: boolean = args.includes("--dry-run");
 try {
   console.log("开始读取文件夹中的所有文件", "⌛");
 
-  const fileInfoArr: FileInfo[] = await readDirFile();
-  const fileInfoArrNew: FileInfo[] = fileSort(fileInfoArr, sortType as SortType);
+  const fileInfoArr: FileInfo[] = await readDirFile(extCount);
+  const fileInfoArrNew: FileInfo[] = fileSort(
+    fileInfoArr,
+    sortType as SortType,
+  );
 
   console.log("所有文件读取完成", "⌛");
 
