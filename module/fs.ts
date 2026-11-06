@@ -8,6 +8,7 @@ export interface FileInfo {
 }
 
 export interface FsModule {
+  readonly isSkippedFile: (name: string) => boolean;
   readonly readDirFile: () => Promise<FileInfo[]>;
   readonly reName: (
     fileArr: FileInfo[],
@@ -20,15 +21,34 @@ export interface FsModule {
 const { readDir, cwd, rename, stdin } = Deno;
 
 /**
+ * 判断文件是否需要跳过（跳过时不执行任何重命名操作）。
+ *
+ * 跳过规则：
+ * - 点文件：以 `.` 开头，如 `.gitignore`、`.env`、`.config.json`
+ * - 无扩展名文件：不含 `.`（如 `LICENSE`、`Makefile`），或以 `.` 结尾（扩展名为空）
+ */
+const isSkippedFile = (name: string): boolean => {
+  const dotIndex: number = name.lastIndexOf(".");
+  return name.startsWith(".") || dotIndex <= 0 || dotIndex === name.length - 1;
+};
+
+/**
  * 读取文件夹所有子文件，并返回子文件信息。
+ * 子目录、点文件、无扩展名文件均会被跳过。
  */
 const readDirFile = async (): Promise<FileInfo[]> => {
   const fileInfoArr: FileInfo[] = [];
+  const skippedNameArr: string[] = [];
   const currentDir: string = cwd();
 
   for await (const dirEntry of readDir(currentDir)) {
     const { name, isFile }: { name: string; isFile: boolean } = dirEntry;
     if (!isFile) continue;
+
+    if (isSkippedFile(name)) {
+      skippedNameArr.push(name);
+      continue;
+    }
 
     const nameArr: string[] = name.split(".");
     const fileType: string = nameArr.at(-1) ?? "";
@@ -62,6 +82,14 @@ const readDirFile = async (): Promise<FileInfo[]> => {
     } finally {
       file.close();
     }
+  }
+
+  if (skippedNameArr.length > 0) {
+    const skippedCount: number = skippedNameArr.length;
+    const skippedNames: string = skippedNameArr.join("、");
+    console.log(
+      `\u001b[2m已跳过 ${skippedCount} 个文件（点文件/无扩展名）：${skippedNames}\u001b[0m`,
+    );
   }
 
   return fileInfoArr;
@@ -144,8 +172,9 @@ const reName = async (
 };
 
 const fs: FsModule = {
+  isSkippedFile,
   readDirFile,
   reName,
 };
 
-export { fs as default, readDirFile, reName };
+export { fs as default, isSkippedFile, readDirFile, reName };
