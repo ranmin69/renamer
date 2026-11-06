@@ -5,13 +5,13 @@
 ## 安装
 
 ```shell
-deno install --allow-all -n rename bitch.ts
+deno install --allow-read --allow-write -n rename bitch.ts
 ```
 
 ### 更新（重新安装）
 
 ```shell
-deno install -f --allow-all -n rename bitch.ts
+deno install -f --allow-read --allow-write -n rename bitch.ts
 ```
 
 ---
@@ -69,6 +69,25 @@ Rename v0.3.9
 ```shell
 rename --start 1 --name photo --sort 'bt-asc' --dry-run
 ```
+
+### 自动跳过的文件
+
+以下文件**不会**参与重命名：
+
+| 类型 | 判定规则 | 示例 |
+|------|----------|------|
+| 点文件 | 文件名以 `.` 开头 | `.gitignore`、`.env`、`.config.json` |
+| 无扩展名文件 | 文件名不含 `.` | `LICENSE`、`Makefile`、`README` |
+| 空扩展名文件 | 文件名以 `.` 结尾 | `notes.` |
+| 子目录 | 不是普通文件 | `src/`、`module/` |
+
+被跳过的点文件与无扩展名文件会在运行时以灰色提示列出（子目录为静默跳过，不在此提示中）：
+
+```text
+已跳过 2 个文件（点文件/无扩展名）：.gitignore、LICENSE
+```
+
+> **说明**：`.config.json` 这类以 `.` 开头的文件，即便本身带有扩展名，也按点文件处理，同样会被跳过。
 
 ---
 
@@ -131,5 +150,6 @@ c.jpg → photo3.jpeg
 
 - 正式执行前会先预览全部更改，需按 **Enter** 确认后才真正重命名，**Ctrl+C** 可随时取消
 - 只处理**文件**，子目录自动跳过
+- **点文件**（以 `.` 开头）与**无扩展名文件**自动跳过，不参与重命名，详见[自动跳过的文件](#自动跳过的文件)
 - `.jpg` 扩展名自动转为 `.jpeg`
 - 采用两阶段重命名（先改临时名，再改最终名），不会出现新文件名覆盖旧文件的问题
