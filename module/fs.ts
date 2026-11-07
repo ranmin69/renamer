@@ -64,15 +64,9 @@ const readDirFile = async (extCount: number): Promise<FileInfo[]> => {
 
     const fileInfo: Deno.FileInfo = await stat(`${currentDir}/${name}`);
 
-    const atime: number = fileInfo.atime
-      ? new Date(fileInfo.atime).getTime()
-      : 0;
-    const mtime: number = fileInfo.mtime
-      ? new Date(fileInfo.mtime).getTime()
-      : 0;
-    const birthtime: number = fileInfo.birthtime
-      ? new Date(fileInfo.birthtime).getTime()
-      : 0;
+    const atime: number = fileInfo.atime ? new Date(fileInfo.atime).getTime() : 0;
+    const mtime: number = fileInfo.mtime ? new Date(fileInfo.mtime).getTime() : 0;
+    const birthtime: number = fileInfo.birthtime ? new Date(fileInfo.birthtime).getTime() : 0;
 
     fileInfoArr.push({
       name,
@@ -87,9 +81,7 @@ const readDirFile = async (extCount: number): Promise<FileInfo[]> => {
   if (skippedNameArr.length > 0) {
     const skippedCount: number = skippedNameArr.length;
     const skippedNames: string = skippedNameArr.join("、");
-    console.log(
-      `\u001b[2m已跳过 ${skippedCount} 个文件（点文件/无扩展名）：${skippedNames}\u001b[0m`,
-    );
+    console.log(`\u001b[2m已跳过 ${skippedCount} 个文件（点文件/无扩展名）：${skippedNames}\u001b[0m`,);
   }
 
   return fileInfoArr;
@@ -137,24 +129,18 @@ const reName = async (
   // 预览：先列出所有更改前后的名字对比（橙色 \u001b[38;5;208m）
   console.log("\u001b[36m重命名预览：\u001b[0m");
   for (const task of tasks) {
-    console.log(
-      `📄：\u001b[38;5;208m${task.oldName}\u001b[0m => \u001b[38;5;208m${task.newName}\u001b[0m`,
-    );
+    console.log(`📄：\u001b[38;5;208m${task.oldName}\u001b[0m => \u001b[38;5;208m${task.newName}\u001b[0m`,);
   }
 
   // dry-run 模式：仅预览，不执行任何重命名
   if (dryRun) {
-    console.log(
-      `\u001b[36m（--dry-run 预览模式，共 ${tasks.length} 个文件，未实际重命名）\u001b[0m`,
-    );
+    console.log(`\u001b[36m（--dry-run 预览模式，共 ${tasks.length} 个文件，未实际重命名）\u001b[0m`,);
     return;
   }
 
   // 正式模式：等待用户按 Enter 确认后再执行
   console.log("");
-  console.log(
-    `\u001b[33m确认以上 ${tasks.length} 个文件无误后，按 Enter 键开始重命名（Ctrl+C 取消）：\u001b[0m`,
-  );
+  console.log(`\u001b[33m确认以上 ${tasks.length} 个文件无误后，按 Enter 键开始重命名（Ctrl+C 取消）：\u001b[0m`,);
   await stdin.read(new Uint8Array(1024));
 
   // 第一阶段：旧文件名 => 临时文件名

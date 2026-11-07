@@ -58,9 +58,7 @@ const [
  * 即默认只保留最后一段扩展名，与历史行为一致（如 2 可完整保留 .tar.gz）。
  */
 const parsedExt: number = Number(extArg);
-const extCount: number = Number.isInteger(parsedExt) && parsedExt >= 1
-  ? parsedExt
-  : 1;
+const extCount: number = Number.isInteger(parsedExt) && parsedExt >= 1 ? parsedExt : 1;
 
 /** 是否为 dry-run 预览模式（布尔标志，无值） */
 const dryRun: boolean = args.includes("--dry-run");
@@ -72,10 +70,7 @@ try {
   console.log("开始读取文件夹中的所有文件", "⌛");
 
   const fileInfoArr: FileInfo[] = await readDirFile(extCount);
-  const fileInfoArrNew: FileInfo[] = fileSort(
-    fileInfoArr,
-    sortType as SortType,
-  );
+  const fileInfoArrNew: FileInfo[] = fileSort(fileInfoArr, sortType as SortType,);
 
   console.log("所有文件读取完成", "⌛");
 
